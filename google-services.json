@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "168421763659",
+    "project_id": "vivecultura-b65ca",
+    "storage_bucket": "vivecultura-b65ca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168421763659:android:23af0d6764485fc11abbce",
+        "android_client_info": {
+          "package_name": "com.vive_cultura.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "168421763659-q2joljtrgr3loktt8p1lglpsm6eojbtq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vive_cultura.app",
+            "certificate_hash": "c3dd16a0a261c2399c603acb597998be08d838fa"
+          }
+        },
+        {
+          "client_id": "168421763659-0qv5c7ufseg8m39ltk7aes9h68hqid2j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmjXoT8FJ0eBkQuUwvCJwQjrelBVTbflY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "168421763659-0qv5c7ufseg8m39ltk7aes9h68hqid2j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

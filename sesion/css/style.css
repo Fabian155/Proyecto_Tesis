@@ -1,0 +1,220 @@
+/* Importar la fuente Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Estilos generales */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    background-color: #0F172A; /* Azul oscuro de fondo */
+    color: #F9FAFB; /* Blanco claro para texto */
+    overflow: hidden;
+}
+.split-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* Panel Izquierdo (Visual) */
+.left-panel {
+    flex: 1;
+    background-color: #1E293B; /* Azul oscuro intermedio */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    box-shadow: 10px 0 20px rgba(0,0,0,0.2);
+}
+.mountain-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Forma de la montaña */
+    clip-path: polygon(0 40%, 50% 10%, 100% 40%, 100% 0, 0 0);
+    background-color: #1E293B;
+    z-index: -1;
+    transition: all 0.5s ease-in-out;
+}
+.left-panel .logo {
+    z-index: 1;
+}
+.left-panel .logo img {
+    max-width: 300px;
+    height: auto;
+}
+
+/* Panel Derecho (Formulario) */
+.right-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-color: #0F172A;
+}
+.login-container {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: none;
+    position: relative;
+    z-index: 1;
+}
+
+/* Títulos y subtítulos */
+h2 { 
+    font-size: 28px; 
+    font-weight: 700; 
+    margin-bottom: 5px; 
+}
+p.subtitle { 
+    font-size: 16px; 
+    color: #64748B; /* Gris/Azul para subtítulo */
+    margin-bottom: 30px; 
+}
+
+/* Grupos de Input */
+.input-group { 
+    margin-bottom: 20px; 
+    text-align: left; 
+}
+.input-group label { 
+    display: block; 
+    color: #64748B; 
+    font-size: 14px; 
+    margin-bottom: 5px; 
+}
+.input-group input { 
+    width: 100%; 
+    padding: 15px; 
+    background-color: #1E293B; 
+    border: none; 
+    border-radius: 10px; 
+    color: #F9FAFB; 
+    font-size: 16px; 
+    box-sizing: border-box; 
+}
+
+/* Enlace de Contraseña olvidada */
+.forgot-password { 
+    text-align: right; 
+    margin-top: -10px; 
+    margin-bottom: 20px; 
+}
+.forgot-password a { 
+    color: #94A3B8; 
+    text-decoration: none; 
+    font-size: 14px; 
+    transition: color 0.3s ease; 
+}
+.forgot-password a:hover { 
+    color: #F9FAFB; 
+    text-decoration: underline; 
+}
+
+/* Botón de Ingresar */
+.btn-submit { 
+    width: 100%; 
+    padding: 15px; 
+    background-color: #1D4ED8; /* Azul primario */
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    font-size: 18px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+.btn-submit:hover { 
+    background-color: #1E40AF; 
+}
+
+/* Separador (O continúa con) */
+.divider { 
+    display: flex; 
+    align-items: center; 
+    text-align: center; 
+    margin: 20px 0; 
+    color: #64748B; 
+}
+.divider::before, .divider::after { 
+    content: ''; 
+    flex: 1; 
+    border-bottom: 1px solid #334155; 
+}
+.divider:not(:empty)::before { 
+    margin-right: .5em; 
+}
+.divider:not(:empty)::after { 
+    margin-left: .5em; 
+}
+
+/* Botón de Google */
+.btn-google { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 100%; 
+    padding: 15px; 
+    border: 1px solid #334155; 
+    background-color: transparent; 
+    color: #F9FAFB; 
+    border-radius: 10px; 
+    font-size: 16px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+}
+.btn-google img { 
+    width: 24px; 
+    height: 24px; 
+    margin-right: 10px; 
+}
+.btn-google:hover { 
+    background-color: #21324a; 
+}
+
+/* Enlace de Crear cuenta */
+.create-account { 
+    margin-top: 20px; 
+    font-size: 14px; 
+    color: #64748B; 
+}
+.create-account a { 
+    color: #F9FAFB; 
+    font-weight: 600; 
+    text-decoration: none; 
+}
+.create-account a:hover { 
+    text-decoration: underline; 
+}
+
+/* Mensaje de error */
+#error { 
+    color: #ffcc00; /* Amarillo/Dorado para error */
+    margin-top: 10px; 
+    font-size: 14px; 
+}
+
+/* Media Query para dispositivos móviles */
+@media (max-width: 768px) {
+    .left-panel {
+        display: none; /* Ocultar el panel visual en móviles */
+    }
+    .right-panel {
+        width: 100%;
+        flex: none; /* Asegura que tome todo el espacio */
+    }
+    .split-container {
+        display: block;
+    }
+}
