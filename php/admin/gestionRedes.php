@@ -7,7 +7,7 @@ if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'admin') {
 
 include '../../conexion.php';
 
-// ================== ACCIONES AJAX (Sin cambios en PHP puro) ==================
+// ================== ACCIONES AJAX ==================
 
 // Crear Red Social
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'crear') {
@@ -55,28 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     exit;
 }
 
-// Eliminar Red Social (Se mantiene la función, aunque el botón se oculte en el front)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'eliminar') {
-    $id = intval($_POST['id']);
-    
-    pg_query($conn, "BEGIN");
-    $res_db = pg_query($conn, "DELETE FROM tbl_redes_sociales WHERE red_id=$id");
-    
-    if ($res_db) {
-        pg_query($conn, "COMMIT");
-        echo json_encode(["success" => true, "mensaje" => "Red Social eliminada correctamente"]);
-    } else {
-        pg_query($conn, "ROLLBACK");
-        echo json_encode(["success" => false, "mensaje" => "Error: " . pg_last_error($conn)]);
-    }
-    exit;
-}
-
 // Cambiar Estado (Activar/Desactivar)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'cambiar_estado') {
     $id = intval($_POST['id']);
     $estado = $_POST['estado'] === 'activar' ? 'activo' : 'desactivado';
-    $estado_mensaje = $_POST['estado'] === 'activar' ? 'activado' : 'desactivado';
+    $estado_mensaje = $_POST['estado'] === 'activado' ? 'activado' : 'desactivado';
 
     $query = "UPDATE tbl_redes_sociales SET red_est='$estado' WHERE red_id=$id";
     $result = pg_query($conn, $query);
@@ -89,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     exit;
 }
 
-// Listar Redes Sociales ACTIVAS (para DataTables Principal)
+// Listar Redes Sociales ACTIVAS
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'listar') {
     $query = "SELECT * FROM tbl_redes_sociales WHERE red_est = 'activo' ORDER BY red_id DESC";
               
@@ -98,25 +81,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     
     while ($row = pg_fetch_assoc($redes)) {
         $id = $row['red_id'];
-        $estado = $row['red_est'] === 'activo'; 
-        $estado_texto = $estado ? '<span class="badge-success">Activa</span>' : '<span class="badge-danger">Inactiva</span>';
-        
+        $estado_texto = '<span class="badge-success">Activa</span>';
         $btn_accion_texto = 'Desactivar';
         $btn_accion_clase = 'btn-danger-custom'; 
 
-        // --- Generación de la celda de ICONO ---
         $icono_clase = htmlspecialchars($row['red_ico_clase'] ?? '', ENT_QUOTES);
         $img_html = "<td>";
-        if ($icono_clase) {
-            $img_html .= "<i class='{$icono_clase}' style='font-size:24px;'></i>"; 
-        } else {
-            $img_html .= "<span>Sin icono</span>";
-        }
+        $img_html .= $icono_clase ? "<i class='{$icono_clase}' style='font-size:24px;'></i>" : "<span>Sin icono</span>";
         $img_html .= "</td>";
 
-        // Preparamos los datos para la edición
-        $data_attributes = "";
-        $data_attributes .= " data-nom='" . htmlspecialchars($row['red_nom'], ENT_QUOTES) . "'";
+        $data_attributes = " data-nom='" . htmlspecialchars($row['red_nom'], ENT_QUOTES) . "'";
         $data_attributes .= " data-url='" . htmlspecialchars($row['red_url'], ENT_QUOTES) . "'"; 
         $data_attributes .= " data-ico='" . $icono_clase . "'"; 
 
@@ -136,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     exit;
 }
 
-// Listar Redes Sociales DESACTIVADAS (para DataTables del Modal)
+// Listar Redes Sociales DESACTIVADAS
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'listar_desactivadas') {
     $query = "SELECT * FROM tbl_redes_sociales WHERE red_est = 'desactivado' ORDER BY red_id DESC";
               
@@ -146,18 +120,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     while ($row = pg_fetch_assoc($redes)) {
         $id = $row['red_id'];
         $estado_texto = '<span class="badge-danger">Inactiva</span>';
-        
         $btn_accion_texto = 'Activar';
         $btn_accion_clase = 'btn-success-custom'; 
 
-        // --- Generación de la celda de ICONO ---
         $icono_clase = htmlspecialchars($row['red_ico_clase'] ?? '', ENT_QUOTES);
         $img_html = "<td>";
-        if ($icono_clase) {
-            $img_html .= "<i class='{$icono_clase}' style='font-size:24px;'></i>"; 
-        } else {
-            $img_html .= "<span>Sin icono</span>";
-        }
+        $img_html .= $icono_clase ? "<i class='{$icono_clase}' style='font-size:24px;'></i>" : "<span>Sin icono</span>";
         $img_html .= "</td>";
 
         $html .= "<tr id='fila-desactivada-{$id}'>
@@ -187,9 +155,36 @@ ob_start();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.20.0/localization/messages_es.min.js"></script>
 
 
-<div class="container-fluid d-flex flex-column" style="min-height: 100vh; padding: 10px; padding-bottom: 70px;"> 
+<div class="main-content-area-fixed"> 
     
-    <div class="modal fade" id="redSocialModal" tabindex="-1" aria-labelledby="formTitle" aria-hidden="true">
+    <div class="header-area">
+        <h3 style="margin-top:5px; margin-bottom: 5px;">Redes Sociales ACTIVAS</h3>
+    </div>
+    
+    <div class="content-scroll-area">
+        <div class="table-container">
+            <table id="tablaRegistros" class="display responsive-table" style="font-size:12px;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Enlace (red_url)</th>
+                        <th>Icono</th>
+                        <th>Estado</th>
+                        <th data-dt-order="disable">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaRedes"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="fixed-bottom-bar d-flex justify-content-between align-items-center">
+        <button id="btnAgregarRedSocial" class="btn btn-primary-custom btn-lg">➕ Agregar Nueva Red Social</button>
+        <button id="btnVerDesactivadas" class="btn btn-info-custom btn-lg">🚫 Redes Sociales Desactivadas</button>
+    </div>
+
+    <div class="modal fade modal-admin-adjusted" id="redSocialModal" tabindex="-1" aria-labelledby="formTitle" aria-hidden="true">
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header header-custom">
@@ -243,16 +238,16 @@ ob_start();
         </div>
     </div>
 
-    <div class="modal fade" id="redesDesactivadasModal" tabindex="-1" aria-labelledby="desactivadasTitle" aria-hidden="true">
+    <div class="modal fade modal-admin-adjusted" id="redesDesactivadasModal" tabindex="-1" aria-labelledby="desactivadasTitle" aria-hidden="true">
         <div class="modal-dialog modal-xl"> 
             <div class="modal-content">
                 <div class="modal-header header-custom">
-                    <h5 class="modal-title" id="desactivadasTitle">Redes Sociales **DESACTIVADAS**</h5> 
+                    <h5 class="modal-title" id="desactivadasTitle">Redes Sociales DESACTIVADAS</h5> 
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="cargarItems();"></button> 
                 </div>
                 <div class="modal-body">
-                    <div class="table-container" style="overflow-x:auto;">
-                        <table id="tablaDesactivadas" class="display" style="border-collapse:collapse; width:auto; font-size:12px; margin:0 auto;">
+                    <div class="table-container" style="overflow-x:auto; overflow-y:auto; width: fit-content; max-width: 100%;">
+                        <table id="tablaDesactivadas" class="display responsive-table" style="font-size:12px; margin:0 auto;">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -270,45 +265,60 @@ ob_start();
             </div>
         </div>
     </div>
-    
-    <h3 style="margin-top:5px; margin-bottom: 15px;">Redes Sociales **ACTIVAS**</h3>
-    <div class="table-container flex-grow-1"> 
-        <table id="tablaRegistros" class="display" style="border-collapse:collapse; width:auto; font-size:12px;">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Enlace (red_url)</th>
-                    <th>Icono</th>
-                    <th>Estado</th>
-                    <th data-dt-order="disable">Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaRedes"></tbody>
-        </table>
-    </div>
-
-</div> <div class="footer-buttons-fixed d-flex justify-content-between align-items-center">
-    <button id="btnAgregarRedSocial" class="btn btn-primary-custom">➕ Agregar Nueva Red Social</button>
-    <button id="btnVerDesactivadas" class="btn btn-info-custom">🚫 Redes Sociales Desactivadas</button>
 </div>
 
 <style>
-    /* Estilos de Color Personalizados */
-    .btn-primary-custom { background-color: #2e3643; color: white; }
-    .btn-success-custom { background-color: #0475c7; color: white; }
-    .btn-danger-custom { background-color: #db062b; color: white; }
-    .btn-info-custom { background-color: #2e3643; color: white; } 
-    .btn-warning-custom { background-color: #ff9800; color: white; } 
+    /* 1. LAYOUT PRINCIPAL Y SCROLL (Para usar el 100% del espacio disponible) */
+    /* Asegura que la plantilla padre use 100% de alto y no tenga scroll global */
+    html, body, .plantilla-padre, #content { 
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; 
+    }
+    
+    /* Contenedor principal del contenido de esta página */
+    .main-content-area-fixed {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 10px; 
+        box-sizing: border-box;
+    }
 
-    /* Estilos para badges de estado */
-    .badge-success { background-color: #4CAF50; color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; }
-    .badge-danger { background-color: #f44336; color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; }
+    .header-area {
+        flex-shrink: 0;
+        padding-bottom: 5px;
+    }
     
-    /* Estilos para la tabla (Header y Bordes) */
-    .container-fluid { max-width: 100%; padding: 10px !important; }
+    .content-scroll-area {
+        flex-grow: 1; 
+        overflow-y: auto; 
+        overflow-x: hidden;
+        margin-bottom: 10px; 
+    }
+
+    /* 2. BARRA DE BOTONES FIJA/FLEXIBLE */
+    .fixed-bottom-bar {
+        flex-shrink: 0; 
+        padding: 15px 10px;
+        background-color: #f8f9fa; 
+        border-top: 2px solid #2e3643;
+        width: 100%;
+        box-sizing: border-box;
+        margin-left: -10px; 
+        margin-right: -10px; 
+        padding-left: 20px; 
+        padding-right: 20px; 
+    }
+    .btn-lg { padding: 10px 20px; font-size: 16px; }
     
-    /* Encabezado de la tabla con color fijo */
+    /* 3. COLORES Y ESTILOS */
+    .btn-primary-custom, .btn-info-custom { background-color: #2e3643; color: white; border-color: #2e3643; }
+    .btn-success-custom { background-color: #0475c7; color: white; border-color: #0475c7; }
+    .btn-danger-custom { background-color: #db062b; color: white; border-color: #db062b; }
+    .btn-warning-custom { background-color: #ffc107; color: #212529; border-color: #ffc107; }
+
     table.dataTable thead th { 
         background-color: #2e3643 !important; 
         color: white; 
@@ -316,37 +326,43 @@ ob_start();
     }
     table th, table td { border: 1px solid #ccc; padding: 6px; text-align: center; vertical-align: middle; }
     
-    /* Ajuste de DataTables para ocupar el ancho necesario (width: auto) */
-    table.dataTable {
-        width: auto !important; /* Forzar el ancho al contenido */
-        margin: 0 auto !important; /* Centrar la tabla si es más pequeña que el contenedor */
+    .table-container { 
+        width: fit-content; 
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    table.dataTable.responsive-table {
+        width: auto !important; 
+        min-width: 100%;
+        box-sizing: border-box;
     }
     
-    /* Contenedor Fijo en el Borde Inferior */
-    .footer-buttons-fixed {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: white; /* Fondo blanco para que tape el contenido de abajo */
-        padding: 10px 20px;
-        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-        z-index: 1030; /* Asegura que esté por encima de otros elementos */
-        width: 100%;
-        box-sizing: border-box;
+    /* 4. AJUSTE CRÍTICO DE MODALES */
+    /* Este CSS ajusta el modal para que respete el margen de la barra lateral izquierda */
+    .modal-admin-adjusted {
+        /* Asegura que el fondo del modal comience después de la barra lateral (asumiendo 250px de ancho para la barra) */
+        left: 250px !important; 
+        width: calc(100% - 250px) !important;
+    }
+
+    .modal-admin-adjusted .modal-dialog {
+        /* Fuerza la alineación superior y ajusta el ancho dentro del nuevo espacio */
+        align-items: flex-start;
+        min-height: calc(100% - 20px); 
+        /* Centraliza el modal dentro del área principal de contenido */
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    /* Ajuste de margen superior e inferior para evitar que se pegue al borde */
+    .modal-admin-adjusted .modal-dialog .modal-content {
+        margin-top: 20px; 
+        margin-bottom: 20px;
     }
 
     /* Estilos para JQUERY VALIDATION */
-    label.error {
-        color: #db062b;
-        font-size: 10px;
-        font-weight: bold;
-        display: block;
-        margin-top: 2px;
-    }
-    input.error, textarea.error, select.error {
-        border: 1px solid #db062b !important;
-    }
+    label.error { color: #db062b; font-size: 10px; font-weight: bold; display: block; margin-top: 2px; }
+    input.error, textarea.error, select.error { border: 1px solid #db062b !important; }
 </style>
 
 
@@ -356,9 +372,6 @@ ob_start();
     let redSocialModal = null; 
     let redesDesactivadasModal = null; 
 
-    /**
-    * Muestra una alerta usando SweetAlert2.
-    */
     function mostrarMensaje(data) {
         Swal.fire({
             icon: data.success ? 'success' : 'error',
@@ -390,19 +403,15 @@ ob_start();
             .then(html => {
                 tablaBody.innerHTML = html;
                 
+                // Inicializar DataTables
                 dataTable = new DataTable('#tablaRegistros', {
                     paging: true,
                     searching: true,
                     ordering: true,
                     info: true,
-                    responsive: false, // Deshabilitar responsive para que no fuerce width: 100%
-                    scrollX: false, // Importante: Deshabilitar scroll X
+                    responsive: true,
                     language: {
-                        url: '//cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json'
-                    },
-                    // Asegurar que DataTables respete el ancho auto
-                    "initComplete": function(settings, json) {
-                        $('#tablaRegistros').css('width', 'auto'); 
+                        url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json'
                     }
                 });
             })
@@ -431,18 +440,15 @@ ob_start();
             .then(html => {
                 tablaBody.innerHTML = html;
                 
+                // Inicializar DataTables
                 dataTableDesactivadas = new DataTable('#tablaDesactivadas', {
                     paging: true,
                     searching: true,
                     ordering: true,
                     info: true,
-                    responsive: false,
-                    scrollX: false,
+                    responsive: true,
                     language: {
-                        url: '//cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json'
-                    },
-                    "initComplete": function(settings, json) {
-                        $('#tablaDesactivadas').css('width', 'auto');
+                        url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json'
                     }
                 });
             })
@@ -451,15 +457,6 @@ ob_start();
                 tablaBody.innerHTML = '<tr><td colspan="6">Error al cargar la lista.</td></tr>';
             });
     }
-    
-    document.getElementById("btnVerDesactivadas").addEventListener("click", function() {
-        cargarItemsDesactivados();
-        if (redesDesactivadasModal) {
-            redesDesactivadasModal.show();
-        }
-    });
-
-    // ============== LÓGICA DE EDICIÓN (MODAL) ==============
 
     window.cargarDatosEdicion = function(id) {
         const fila = document.getElementById(`fila-${id}`);
@@ -484,7 +481,6 @@ ob_start();
         }
     };
     
-    // Función para limpiar el formulario y cerrar el modal (solo el de Creación/Edición)
     function cancelarFormulario() {
         $("#formRedSocial").validate().resetForm();
         $("#formRedSocial").find('.error').removeClass('error');
@@ -495,14 +491,8 @@ ob_start();
         if (redSocialModal) {
             redSocialModal.hide();
         }
-        cargarItems(); // Refrescar la tabla principal sin recargar la página
+        cargarItems();
     }
-    
-    document.getElementById("btnCancelarForm").addEventListener("click", function() {
-        cancelarFormulario();
-    });
-    
-    // ============== LÓGICA DE CAMBIAR ESTADO ==============
 
     window.cambiarEstado = function(id, estadoNuevo, origen) {
         const icono = estadoNuevo === 'activar' ? 'question' : 'warning';
@@ -531,10 +521,10 @@ ob_start();
                         mostrarMensaje(data);
                         if (data.success) {
                             if (origen === 'principal') {
-                                cargarItems(); // Refrescar la tabla principal
+                                cargarItems();
                             } else if (origen === 'modal') {
-                                cargarItemsDesactivados(); // Refrescar el modal (sin cerrarlo)
-                                cargarItems(); // Refrescar la tabla principal
+                                cargarItemsDesactivados(); 
+                                cargarItems(); 
                             }
                         }
                     })
@@ -545,8 +535,11 @@ ob_start();
         });
     }
 
-    // ============== LÓGICA de CREACIÓN Y ACTUALIZACIÓN (Form Submit) ==============
+    // =========================================================
+    // JQUERY VALIDATION y AJAX Submit
+    // =========================================================
 
+    // Asignar eventos a los botones de la barra fija
     document.getElementById("btnAgregarRedSocial").addEventListener("click", function() {
         document.getElementById("formRedSocial").reset();
         document.getElementById("red_id").value = ""; 
@@ -561,28 +554,27 @@ ob_start();
             redSocialModal.show();
         }
     });
+
+    document.getElementById("btnVerDesactivadas").addEventListener("click", function() {
+        cargarItemsDesactivados();
+        if (redesDesactivadasModal) {
+            redesDesactivadasModal.show();
+        }
+    });
     
-    // =========================================================
-    // JQUERY VALIDATION
-    // =========================================================
+    document.getElementById("btnCancelarForm").addEventListener("click", function() {
+        cancelarFormulario();
+    });
+
     $.validator.setDefaults({
-        ignore: [] 
+        ignore: []
     });
 
     $("#formRedSocial").validate({
         rules: {
-            "red_nom": {
-                required: true,
-                minlength: 3, 
-                maxlength: 50
-            },
-            "red_url": {
-                required: true,
-                url: true
-            },
-            "red_ico_clase": {
-                required: true
-            }
+            "red_nom": { required: true, minlength: 3, maxlength: 50 },
+            "red_url": { required: true, url: true },
+            "red_ico_clase": { required: true }
         },
         messages: {
             "red_nom": {
@@ -599,7 +591,6 @@ ob_start();
             }
         },
         submitHandler: function(form) {
-            
             let formData = new FormData(form);
             let redId = document.getElementById('red_id').value;
             let accion = redId ? 'actualizar' : 'crear'; 
@@ -646,8 +637,8 @@ ob_start();
         }
     });
 
-    // Cargar items e inicializar los modales al iniciar
     document.addEventListener("DOMContentLoaded", function() {
+        // Inicializar los modales
         redSocialModal = new bootstrap.Modal(document.getElementById('redSocialModal'), {});
         redesDesactivadasModal = new bootstrap.Modal(document.getElementById('redesDesactivadasModal'), {
             backdrop: 'static', 
